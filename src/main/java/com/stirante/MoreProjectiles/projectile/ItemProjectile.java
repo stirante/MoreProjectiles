@@ -1,11 +1,11 @@
 package com.stirante.MoreProjectiles.projectile;
 
-import com.stirante.MoreProjectiles.Particles;
 import com.stirante.MoreProjectiles.TypedRunnable;
 import com.stirante.MoreProjectiles.event.CustomProjectileHitEvent;
 import com.stirante.MoreProjectiles.event.ItemProjectileHitEvent;
 import net.minecraft.server.v1_8_R1.*;
 import org.bukkit.Bukkit;
+import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
@@ -24,15 +24,15 @@ import java.util.List;
 /**
  * Projectile made from item entity
  */
-public class ItemProjectile extends EntityItem implements IProjectile, CustomProjectile {
+public class ItemProjectile extends EntityItem implements IProjectile, CustomProjectile<ItemProjectile> {
 
     private final EntityLiving shooter;
     private final String name;
     private final List<Runnable> runnables = new ArrayList<>();
     private final List<TypedRunnable<ItemProjectile>> typedRunnables = new ArrayList<>();
-    private boolean ignoreSomeBlocks = false;
     private int knockback;
     private int age;
+    private ArrayList<Material> ignoredMaterials = new ArrayList<>();
 
     /**
      * Instantiates a new item projectile.
@@ -104,7 +104,7 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
         IBlockData iblockdata = world.getType(blockposition);
         Block block = iblockdata.getBlock();
 
-        if (!isIgnored(Material.getMaterial(Block.getId(block)))) {
+        if (!ignoredMaterials.contains(Material.getMaterial(Block.getId(block)))) {
             AxisAlignedBB axisalignedbb = block.a(world, blockposition, iblockdata);
 
             if ((axisalignedbb != null) && (axisalignedbb.a(new Vec3D(locX, locY, locZ)))) {
@@ -113,9 +113,9 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
                 Bukkit.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
                     if (CraftItemStack.asCraftMirror(getItemStack()).getType().isBlock())
-                        Particles.displayBlockCrack(getBukkitEntity().getLocation(), getItem().getTypeId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20);
+                        world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.TILE_BREAK, getId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20, 20);
                     else
-                        Particles.displayIconCrack(getBukkitEntity().getLocation(), getItem().getTypeId(), 0F, 0F, 0F, 0.1F, 20);
+                        world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.ITEM_BREAK, getId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20, 20);
                     die();
                 }
             }
@@ -175,13 +175,13 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
                         }
                     }
                     if (CraftItemStack.asCraftMirror(getItemStack()).getType().isBlock())
-                        Particles.displayBlockCrack(getBukkitEntity().getLocation(), getItem().getTypeId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20);
+                        world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.TILE_BREAK, getId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20, 20);
                     else
-                        Particles.displayIconCrack(getBukkitEntity().getLocation(), getItem().getTypeId(), 0F, 0F, 0F, 0.1F, 20);
+                        world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.ITEM_BREAK, getId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20, 20);
                     die();
                 }
             } else if (movingobjectposition.a() != null) {
-                if (!isIgnored(Material.getMaterial(Block.getId(block)))) {
+                if (!ignoredMaterials.contains(Material.getMaterial(Block.getId(block)))) {
                     motX = ((float) (movingobjectposition.pos.a - locX));
                     motY = ((float) (movingobjectposition.pos.b - locY));
                     motZ = ((float) (movingobjectposition.pos.c - locZ));
@@ -194,9 +194,9 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
                     Bukkit.getPluginManager().callEvent(event);
                     if (!event.isCancelled()) {
                         if (CraftItemStack.asCraftMirror(getItemStack()).getType().isBlock())
-                            Particles.displayBlockCrack(getBukkitEntity().getLocation(), getItem().getTypeId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20);
+                            world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.TILE_BREAK, getId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20, 20);
                         else
-                            Particles.displayIconCrack(getBukkitEntity().getLocation(), getItem().getTypeId(), 0F, 0F, 0F, 0.1F, 20);
+                            world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.ITEM_BREAK, getId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20, 20);
                         die();
                     }
                 }
@@ -272,9 +272,9 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
         Bukkit.getPluginManager().callEvent(event);
         if (!event.isCancelled()) {
             if (CraftItemStack.asCraftMirror(getItemStack()).getType().isBlock())
-                Particles.displayBlockCrack(getBukkitEntity().getLocation(), getItem().getTypeId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20);
+                world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.TILE_BREAK, getId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20, 20);
             else
-                Particles.displayIconCrack(getBukkitEntity().getLocation(), getItem().getTypeId(), 0F, 0F, 0F, 0.1F, 20);
+                world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.ITEM_BREAK, getId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20, 20);
             die();
         }
     }
@@ -326,15 +326,19 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
         runnables.remove(r);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public void addTypedRunnable(TypedRunnable<? extends CustomProjectile> r) {
-        typedRunnables.add((TypedRunnable<ItemProjectile>) r);
+    public void addTypedRunnable(TypedRunnable<ItemProjectile> r) {
+        typedRunnables.add(r);
     }
 
     @Override
-    public void removeTypedRunnable(TypedRunnable<? extends CustomProjectile> r) {
+    public void removeTypedRunnable(TypedRunnable<ItemProjectile> r) {
         typedRunnables.remove(r);
+    }
+
+    @Override
+    public ArrayList<Material> getIgnoredBlocks() {
+        return ignoredMaterials;
     }
 
     @Override
@@ -345,37 +349,6 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
             return new net.minecraft.server.v1_8_R1.ItemStack(Blocks.STONE);
         }
         return itemstack;
-    }
-
-    private boolean isIgnored(Material m) {
-        if (!isIgnoringSomeBlocks()) return false;
-        switch (m) {
-            case AIR:
-            case GRASS:
-            case DOUBLE_PLANT:
-            case CROPS:
-            case CARROT:
-            case POTATO:
-            case SUGAR_CANE_BLOCK:
-            case DEAD_BUSH:
-            case LONG_GRASS:
-            case WATER:
-            case STATIONARY_WATER:
-            case SAPLING:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    @Override
-    public boolean isIgnoringSomeBlocks() {
-        return ignoreSomeBlocks;
-    }
-
-    @Override
-    public void setIgnoreSomeBlocks(boolean ignoreSomeBlocks) {
-        this.ignoreSomeBlocks = ignoreSomeBlocks;
     }
 
     @Override

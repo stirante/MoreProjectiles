@@ -1,11 +1,11 @@
 package com.stirante.MoreProjectiles.projectile;
 
-import com.stirante.MoreProjectiles.Particles;
 import com.stirante.MoreProjectiles.TypedRunnable;
 import com.stirante.MoreProjectiles.event.BlockProjectileHitEvent;
 import com.stirante.MoreProjectiles.event.CustomProjectileHitEvent;
 import net.minecraft.server.v1_8_R1.*;
 import org.bukkit.Bukkit;
+import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
@@ -22,17 +22,16 @@ import java.util.List;
 /**
  * Projectile made from falling block entity.
  */
-public class BlockProjectile extends EntityFallingBlock implements CustomProjectile, IProjectile {
+public class BlockProjectile extends EntityFallingBlock implements CustomProjectile<BlockProjectile>, IProjectile {
 
     private final EntityLiving shooter;
     private int age;
     private final String name;
     private final List<Runnable> runnables = new ArrayList<>();
     private final List<TypedRunnable<BlockProjectile>> typedRunnables = new ArrayList<>();
-    private boolean ignoreSomeBlocks = false;
-    private int data;
-    private int id;
     private int knockback = 0;
+    private Field f;
+    private ArrayList<Material> ignoredMaterials = new ArrayList<>();
 
     /**
      * Instantiates a new block projectile.
@@ -46,11 +45,9 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
      * @param power   projectile power
      */
     public BlockProjectile(String name, Location loc, int blockId, int data, LivingEntity shooter, float power) {
-        super(((CraftWorld) loc.getWorld()).getHandle(), loc.getX(), loc.getY(), loc.getZ(), Block.getByCombinedId(blockId + (data << 12)));
+        super(((CraftWorld) loc.getWorld()).getHandle(), loc.getX(), loc.getY(), loc.getZ(), Block.getById(blockId).fromLegacyData(data));
         this.shooter = ((CraftLivingEntity) shooter).getHandle();
         this.name = name;
-        this.data = data;
-        this.id = blockId;
         this.a(0.25F, 0.25F);
         setPositionRotation(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
         locX -= (MathHelper.cos(yaw / 180.0F * 3.1415927F) * 0.16F);
@@ -64,6 +61,11 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
         shoot(motX, motY, motZ, power * 1.5F, 1.0F);
         world.addEntity(this);
         this.dropItem = false;
+        try {
+            this.f = getClass().getDeclaredField("invulnerable");
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -93,6 +95,11 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
         shoot(motX, motY, motZ, power * 1.5F, 1.0F);
         world.addEntity(this);
         this.dropItem = false;
+        try {
+            this.f = getClass().getDeclaredField("invulnerable");
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -137,7 +144,7 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
         IBlockData iblockdata = world.getType(blockposition);
         Block block = iblockdata.getBlock();
 
-        if (isNotIgnored(Material.getMaterial(Block.getId(block)))) {
+        if (!ignoredMaterials.contains(Material.getMaterial(Block.getId(block)))) {
             AxisAlignedBB axisalignedbb = block.a(world, blockposition, iblockdata);
 
             if ((axisalignedbb != null) && (axisalignedbb.a(new Vec3D(locX, locY, locZ)))) {
@@ -145,7 +152,7 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
                 CustomProjectileHitEvent event = new BlockProjectileHitEvent(this, damageMultiplier, world.getWorld().getBlockAt((int) locX, (int) locY, (int) locZ), BlockFace.UP, getMaterial(), getData());
                 Bukkit.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
-                    Particles.displayBlockCrack(getBukkitEntity().getLocation(), this.id, (byte) this.data, 0F, 0F, 0F, 1F, 60);
+                    world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.TILE_BREAK, getId(), getData(), 0F, 0F, 0F, 1F, 60, 20);
                     die();
                 }
             }
@@ -209,15 +216,11 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
                             movingobjectposition.entity.g(motX * getKnockback() * 0.6000000238418579D / f4, 0.1D, motZ * getKnockback() * 0.6000000238418579D / f4);
                         }
                     }
-                    Particles.displayBlockCrack(getBukkitEntity().getLocation(), id, (byte) data, 0F, 0F, 0F, 1F, 60);
+                    world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.TILE_BREAK, getId(), getData(), 0F, 0F, 0F, 1F, 60, 20);
                     die();
                 }
             } else if (movingobjectposition.a() != null) {
-                BlockPosition blockposition1 = movingobjectposition.a();
-                iblockdata = world.getType(blockposition1);
-                Block b = iblockdata.getBlock();
-                if (isNotIgnored(Material.getMaterial(Block.getId(block)))) {
-                    int data = b.toLegacyData(iblockdata);
+                if (!ignoredMaterials.contains(Material.getMaterial(Block.getId(block)))) {
                     motX = ((float) (movingobjectposition.pos.a - locX));
                     motY = ((float) (movingobjectposition.pos.b - locY));
                     motZ = ((float) (movingobjectposition.pos.c - locZ));
@@ -229,7 +232,7 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
                     CustomProjectileHitEvent event = new BlockProjectileHitEvent(this, damageMultiplier, world.getWorld().getBlockAt((int) movingobjectposition.pos.a, (int) movingobjectposition.pos.b, (int) movingobjectposition.pos.c), CraftBlock.notchToBlockFace(movingobjectposition.direction), getMaterial(), getData());
                     Bukkit.getPluginManager().callEvent(event);
                     if (!event.isCancelled()) {
-                        Particles.displayBlockCrack(getBukkitEntity().getLocation(), id, (byte) data, 0F, 0F, 0F, 1F, 60);
+                        world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.TILE_BREAK, getId(), getData(), 0F, 0F, 0F, 1F, 60, 20);
                         die();
                     }
                 }
@@ -272,7 +275,7 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
      */
     @SuppressWarnings("deprecation")
     public Material getMaterial() {
-        return Material.getMaterial(id);
+        return Material.getMaterial(getId());
     }
 
     /**
@@ -281,30 +284,22 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
      * @return the data
      */
     public int getData() {
-        return data;
+        return getBlock().getBlock().toLegacyData(getBlock());
     }
 
     @Override
     public void setInvulnerable(boolean value) {
         try {
-            Field f = getClass().getDeclaredField("invulnerable");
             f.setAccessible(true);
             f.set(this, value);
-        } catch (Throwable t) {
+        } catch (SecurityException | IllegalAccessException t) {
             t.printStackTrace();
         }
     }
 
     @Override
     public boolean isInvulnerable() {
-        try {
-            Field f = getClass().getDeclaredField("invulnerable");
-            f.setAccessible(true);
-            return (Boolean) f.get(this);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return false;
-        }
+        return getEntity().spigot().isInvulnerable();
     }
 
     @Override
@@ -317,46 +312,19 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
         runnables.remove(r);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public void addTypedRunnable(TypedRunnable<? extends CustomProjectile> r) {
-        typedRunnables.add((TypedRunnable<BlockProjectile>) r);
+    public void addTypedRunnable(TypedRunnable<BlockProjectile> r) {
+        typedRunnables.add(r);
     }
 
     @Override
-    public void removeTypedRunnable(TypedRunnable<? extends CustomProjectile> r) {
+    public void removeTypedRunnable(TypedRunnable<BlockProjectile> r) {
         typedRunnables.remove(r);
     }
 
-    private boolean isNotIgnored(Material m) {
-        if (!isIgnoringSomeBlocks()) return true;
-        switch (m) {
-            case AIR:
-            case GRASS:
-            case DOUBLE_PLANT:
-            case CROPS:
-            case CARROT:
-            case POTATO:
-            case SUGAR_CANE_BLOCK:
-            case DEAD_BUSH:
-            case LONG_GRASS:
-            case WATER:
-            case STATIONARY_WATER:
-            case SAPLING:
-                return false;
-            default:
-                return true;
-        }
-    }
-
     @Override
-    public boolean isIgnoringSomeBlocks() {
-        return ignoreSomeBlocks;
-    }
-
-    @Override
-    public void setIgnoreSomeBlocks(boolean ignoreSomeBlocks) {
-        this.ignoreSomeBlocks = ignoreSomeBlocks;
+    public ArrayList<Material> getIgnoredBlocks() {
+        return ignoredMaterials;
     }
 
     @Override

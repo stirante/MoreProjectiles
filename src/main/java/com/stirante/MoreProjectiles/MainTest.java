@@ -3,6 +3,7 @@ package com.stirante.MoreProjectiles;
 import com.stirante.MoreProjectiles.event.CustomProjectileHitEvent;
 import com.stirante.MoreProjectiles.event.CustomProjectileHitEvent.HitType;
 import com.stirante.MoreProjectiles.projectile.*;
+import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
@@ -28,7 +29,7 @@ public class MainTest extends JavaPlugin implements Listener {
             p.addTypedRunnable(new TypedRunnable<ItemProjectile>() {
                 @Override
                 public void run(ItemProjectile o) {
-                    Particles.HAPPY_VILLAGER.display(o.getEntity().getLocation(), 0, 0, 0, 0, 1);
+                    o.getEntity().getWorld().spigot().playEffect(o.getEntity().getLocation(), Effect.HAPPY_VILLAGER);
                 }
             });
             e.setCancelled(true);
@@ -43,7 +44,7 @@ public class MainTest extends JavaPlugin implements Listener {
             p.addTypedRunnable(new TypedRunnable<OrbProjectile>() {
                 @Override
                 public void run(OrbProjectile o) {
-                    Particles.HAPPY_VILLAGER.display(o.getEntity().getLocation(), 0, 0, 0, 0, 1);
+                    o.getEntity().getWorld().spigot().playEffect(o.getEntity().getLocation(), Effect.HAPPY_VILLAGER);
                 }
             });
             e.setCancelled(true);
@@ -59,7 +60,7 @@ public class MainTest extends JavaPlugin implements Listener {
         if (e.getHitType() == HitType.ENTITY) {
             e.getHitEntity().damage(3D * e.getDamageMultiplier(), e.getProjectile().getShooter());//if projectile hit entity, it damages this entity. Damage multiplier is based on velocity
         }
-        Particles.CRIT.display(e.getProjectile().getEntity().getLocation(), 0, 0, 0, 0.2F, 20);//plays crit particle at projectile location
+        e.getProjectile().getEntity().getWorld().spigot().playEffect(e.getProjectile().getEntity().getLocation(), Effect.CRIT);
     }
 
 }

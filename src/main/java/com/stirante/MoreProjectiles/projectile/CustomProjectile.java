@@ -1,14 +1,17 @@
 package com.stirante.MoreProjectiles.projectile;
 
 import com.stirante.MoreProjectiles.TypedRunnable;
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 
+import java.util.ArrayList;
+
 /**
  * Custom projectile interface.
  */
-public interface CustomProjectile {
+public interface CustomProjectile<T> {
 
     /**
      * Gets the entity type.
@@ -71,28 +74,21 @@ public interface CustomProjectile {
      *
      * @param r runnable
      */
-    public void addTypedRunnable(TypedRunnable<? extends CustomProjectile> r);
+    public void addTypedRunnable(TypedRunnable<T> r);
 
     /**
      * Removes the typed runnable.
      *
      * @param r runnable
      */
-    public void removeTypedRunnable(TypedRunnable<? extends CustomProjectile> r);
-
-    /**
-     * Checks if is ignoring blocks like water.
-     *
-     * @return true, if is ignoring blocks like water.
-     */
-    public boolean isIgnoringSomeBlocks();
+    public void removeTypedRunnable(TypedRunnable<T> r);
 
     /**
      * Sets if is ignoring blocks like water.
      *
-     * @param ignoreSomeBlocks is ignoring blocks.
+     * @return return modifiable list of ignored materials
      */
-    public void setIgnoreSomeBlocks(boolean ignoreSomeBlocks);
+    public ArrayList<Material> getIgnoredBlocks();
 
     /**
      * Sets if is ignoring blocks like water.

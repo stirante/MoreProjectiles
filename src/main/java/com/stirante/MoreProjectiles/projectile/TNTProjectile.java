@@ -24,14 +24,14 @@ import java.util.List;
 /**
  * Projectile made from primed tnt entity.
  */
-public class TNTProjectile extends EntityTNTPrimed implements CustomProjectile, IProjectile {
+public class TNTProjectile extends EntityTNTPrimed implements CustomProjectile<TNTProjectile>, IProjectile {
 
     private final String name;
     private int age;
     private final List<Runnable> runnables = new ArrayList<>();
     private final List<TypedRunnable<TNTProjectile>> typedRunnables = new ArrayList<>();
-    private boolean ignoreSomeBlocks = false;
     private int knockback;
+    private ArrayList<Material> ignoredMaterials = new ArrayList<>();
 
     /**
      * Instantiates a new primed tnt projectile.
@@ -126,10 +126,6 @@ public class TNTProjectile extends EntityTNTPrimed implements CustomProjectile, 
         return name;
     }
 
-    /**
-     * On update method
-     */
-
     @Override
     public void s_() {
         K();
@@ -145,7 +141,7 @@ public class TNTProjectile extends EntityTNTPrimed implements CustomProjectile, 
         IBlockData iblockdata = world.getType(blockposition);
         Block block = iblockdata.getBlock();
 
-        if (!isIgnored(Material.getMaterial(Block.getId(block)))) {
+        if (!ignoredMaterials.contains(Material.getMaterial(Block.getId(block)))) {
             AxisAlignedBB axisalignedbb = block.a(world, blockposition, iblockdata);
 
             if ((axisalignedbb != null) && (axisalignedbb.a(new Vec3D(locX, locY, locZ)))) {
@@ -219,7 +215,7 @@ public class TNTProjectile extends EntityTNTPrimed implements CustomProjectile, 
                     die();
                 }
             } else if (movingobjectposition.a() != null) {
-                if (!isIgnored(Material.getMaterial(Block.getId(block)))) {
+                if (!ignoredMaterials.contains(Material.getMaterial(Block.getId(block)))) {
                     motX = ((float) (movingobjectposition.pos.a - locX));
                     motY = ((float) (movingobjectposition.pos.b - locY));
                     motZ = ((float) (movingobjectposition.pos.c - locZ));
@@ -318,46 +314,19 @@ public class TNTProjectile extends EntityTNTPrimed implements CustomProjectile, 
         runnables.remove(r);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public void addTypedRunnable(TypedRunnable<? extends CustomProjectile> r) {
-        typedRunnables.add((TypedRunnable<TNTProjectile>) r);
+    public void addTypedRunnable(TypedRunnable<TNTProjectile> r) {
+        typedRunnables.add(r);
     }
 
     @Override
-    public void removeTypedRunnable(TypedRunnable<? extends CustomProjectile> r) {
+    public void removeTypedRunnable(TypedRunnable<TNTProjectile> r) {
         typedRunnables.remove(r);
     }
 
-    private boolean isIgnored(Material m) {
-        if (!isIgnoringSomeBlocks()) return false;
-        switch (m) {
-            case AIR:
-            case GRASS:
-            case DOUBLE_PLANT:
-            case CROPS:
-            case CARROT:
-            case POTATO:
-            case SUGAR_CANE_BLOCK:
-            case DEAD_BUSH:
-            case LONG_GRASS:
-            case WATER:
-            case STATIONARY_WATER:
-            case SAPLING:
-                return true;
-            default:
-                return false;
-        }
-    }
-
     @Override
-    public boolean isIgnoringSomeBlocks() {
-        return ignoreSomeBlocks;
-    }
-
-    @Override
-    public void setIgnoreSomeBlocks(boolean ignoreSomeBlocks) {
-        this.ignoreSomeBlocks = ignoreSomeBlocks;
+    public ArrayList<Material> getIgnoredBlocks() {
+        return ignoredMaterials;
     }
 
     @Override

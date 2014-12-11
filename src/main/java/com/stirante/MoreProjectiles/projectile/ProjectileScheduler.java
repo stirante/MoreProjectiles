@@ -24,7 +24,7 @@ import java.util.Random;
  *
  * @author stirante
  */
-public class ProjectileScheduler implements Runnable, IProjectile, CustomProjectile {
+public class ProjectileScheduler implements Runnable, IProjectile, CustomProjectile<ProjectileScheduler> {
 
     private final String name;
     private final EntityLiving shooter;
@@ -34,8 +34,8 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
     private final int id;
     private final List<Runnable> runnables = new ArrayList<>();
     private final List<TypedRunnable<ProjectileScheduler>> typedRunnables = new ArrayList<>();
-    private boolean ignoreSomeBlocks = false;
     private int knockback;
+    private ArrayList<Material> ignoredMaterials = new ArrayList<>();
 
     /**
      * Creates new scheduler projectile
@@ -54,8 +54,8 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
             Field f = Entity.class.getDeclaredField("random");
             f.setAccessible(true);
             random = (Random) f.get(this.e);
-        } catch (Throwable t) {
-            t.printStackTrace();
+        } catch (SecurityException | IllegalAccessException | NoSuchFieldException t) {
+            throw new RuntimeException(t);
         }
         this.e.setPositionRotation(shooter.getLocation().getX(), shooter.getLocation().getY(), shooter.getLocation().getZ(), shooter.getLocation().getYaw(), shooter.getLocation().getPitch());
         this.e.locX -= (MathHelper.cos(this.e.yaw / 180.0F * 3.1415927F) * 0.16F);
@@ -76,7 +76,7 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
         IBlockData iblockdata = e.world.getType(blockposition);
         Block block = iblockdata.getBlock();
 
-        if (!isIgnored(Material.getMaterial(Block.getId(block)))) {
+        if (!ignoredMaterials.contains(Material.getMaterial(Block.getId(block)))) {
             AxisAlignedBB axisalignedbb = block.a(e.world, blockposition, iblockdata);
 
             if ((axisalignedbb != null) && (axisalignedbb.a(new Vec3D(e.locX, e.locY, e.locZ)))) {
@@ -152,7 +152,7 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
                     Bukkit.getScheduler().cancelTask(id);
                 }
             } else if (movingobjectposition.a() != null) {
-                if (!isIgnored(Material.getMaterial(Block.getId(block)))) {
+                if (!ignoredMaterials.contains(Material.getMaterial(Block.getId(block)))) {
                     e.motX = ((float) (movingobjectposition.pos.a - e.locX));
                     e.motY = ((float) (movingobjectposition.pos.b - e.locY));
                     e.motZ = ((float) (movingobjectposition.pos.c - e.locZ));
@@ -272,46 +272,19 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
         runnables.remove(r);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public void addTypedRunnable(TypedRunnable<? extends CustomProjectile> r) {
-        typedRunnables.add((TypedRunnable<ProjectileScheduler>) r);
+    public void addTypedRunnable(TypedRunnable<ProjectileScheduler> r) {
+        typedRunnables.add(r);
     }
 
     @Override
-    public void removeTypedRunnable(TypedRunnable<? extends CustomProjectile> r) {
+    public void removeTypedRunnable(TypedRunnable<ProjectileScheduler> r) {
         typedRunnables.remove(r);
     }
 
-    private boolean isIgnored(Material m) {
-        if (!isIgnoringSomeBlocks()) return false;
-        switch (m) {
-            case AIR:
-            case GRASS:
-            case DOUBLE_PLANT:
-            case CROPS:
-            case CARROT:
-            case POTATO:
-            case SUGAR_CANE_BLOCK:
-            case DEAD_BUSH:
-            case LONG_GRASS:
-            case WATER:
-            case STATIONARY_WATER:
-            case SAPLING:
-                return true;
-            default:
-                return false;
-        }
-    }
-
     @Override
-    public boolean isIgnoringSomeBlocks() {
-        return ignoreSomeBlocks;
-    }
-
-    @Override
-    public void setIgnoreSomeBlocks(boolean ignoreSomeBlocks) {
-        this.ignoreSomeBlocks = ignoreSomeBlocks;
+    public ArrayList<Material> getIgnoredBlocks() {
+        return ignoredMaterials;
     }
 
     @Override
