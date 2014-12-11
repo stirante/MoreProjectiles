@@ -27,8 +27,8 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
     private final EntityLiving shooter;
     private int age;
     private final String name;
-    private final List<Runnable> runnables = new ArrayList<Runnable>();
-    private final List<TypedRunnable<BlockProjectile>> typedRunnables = new ArrayList<TypedRunnable<BlockProjectile>>();
+    private final List<Runnable> runnables = new ArrayList<>();
+    private final List<TypedRunnable<BlockProjectile>> typedRunnables = new ArrayList<>();
     private boolean ignoreSomeBlocks = false;
     private int data;
     private int id;
@@ -137,7 +137,7 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
         IBlockData iblockdata = world.getType(blockposition);
         Block block = iblockdata.getBlock();
 
-        if (!isIgnored(Material.getMaterial(Block.getId(block)))) {
+        if (isNotIgnored(Material.getMaterial(Block.getId(block)))) {
             AxisAlignedBB axisalignedbb = block.a(world, blockposition, iblockdata);
 
             if ((axisalignedbb != null) && (axisalignedbb.a(new Vec3D(locX, locY, locZ)))) {
@@ -165,8 +165,8 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
         List list = world.getEntities(this, getBoundingBox().a(motX, motY, motZ).grow(2.0D, 2.0D, 2.0D));
         double d0 = 0.0D;
 
-        for (int j = 0; j < list.size(); j++) {
-            Entity entity1 = (Entity) list.get(j);
+        for (Object aList : list) {
+            Entity entity1 = (Entity) aList;
 
             if ((entity1.ad()) && ((entity1 != shooter) || (age >= 5))) {
                 float f1 = 0.3F;
@@ -216,7 +216,7 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
                 BlockPosition blockposition1 = movingobjectposition.a();
                 iblockdata = world.getType(blockposition1);
                 Block b = iblockdata.getBlock();
-                if (!isIgnored(Material.getMaterial(Block.getId(block)))) {
+                if (isNotIgnored(Material.getMaterial(Block.getId(block)))) {
                     int data = b.toLegacyData(iblockdata);
                     motX = ((float) (movingobjectposition.pos.a - locX));
                     motY = ((float) (movingobjectposition.pos.b - locY));
@@ -328,8 +328,8 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
         typedRunnables.remove(r);
     }
 
-    private boolean isIgnored(Material m) {
-        if (!isIgnoringSomeBlocks()) return false;
+    private boolean isNotIgnored(Material m) {
+        if (!isIgnoringSomeBlocks()) return true;
         switch (m) {
             case AIR:
             case GRASS:
@@ -343,9 +343,9 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
             case WATER:
             case STATIONARY_WATER:
             case SAPLING:
-                return true;
-            default:
                 return false;
+            default:
+                return true;
         }
     }
 

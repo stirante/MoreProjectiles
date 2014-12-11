@@ -21,7 +21,7 @@ public class CustomProjectileHitEvent extends Event implements Cancellable {
     private Block block;
     private BlockFace face;
     private boolean cancelled;
-    private float damageMultiplier;
+    private final float damageMultiplier;
 
     /**
      * Instantiates a new custom projectile hit event.

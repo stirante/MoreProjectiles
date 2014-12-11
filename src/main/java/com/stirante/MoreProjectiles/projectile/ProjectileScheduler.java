@@ -104,8 +104,8 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
         List list = e.world.getEntities(e, e.getBoundingBox().a(e.motX, e.motY, e.motZ).grow(1.0D, 1.0D, 1.0D));
         double d0 = 0.0D;
 
-        for (int j = 0; j < list.size(); j++) {
-            Entity entity1 = (Entity) list.get(j);
+        for (Object aList : list) {
+            Entity entity1 = (Entity) aList;
 
             if ((entity1.ad()) && ((entity1 != shooter) || (age >= 5))) {
                 float f1 = 0.3F;
@@ -152,11 +152,7 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
                     Bukkit.getScheduler().cancelTask(id);
                 }
             } else if (movingobjectposition.a() != null) {
-                BlockPosition blockposition1 = movingobjectposition.a();
-                iblockdata = e.world.getType(blockposition1);
-                Block b = iblockdata.getBlock();
                 if (!isIgnored(Material.getMaterial(Block.getId(block)))) {
-                    int data = b.toLegacyData(iblockdata);
                     e.motX = ((float) (movingobjectposition.pos.a - e.locX));
                     e.motY = ((float) (movingobjectposition.pos.b - e.locY));
                     e.motZ = ((float) (movingobjectposition.pos.c - e.locZ));

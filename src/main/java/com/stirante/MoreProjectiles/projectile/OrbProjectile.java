@@ -161,8 +161,8 @@ public class OrbProjectile extends EntityExperienceOrb implements CustomProjecti
         List list = world.getEntities(this, getBoundingBox().a(motX, motY, motZ).grow(1.0D, 1.0D, 1.0D));
         double d0 = 0.0D;
 
-        for (int j = 0; j < list.size(); j++) {
-            Entity entity1 = (Entity) list.get(j);
+        for (Object aList : list) {
+            Entity entity1 = (Entity) aList;
 
             if ((entity1.ad()) && ((entity1 != shooter) || (age >= 5))) {
                 float f1 = 0.3F;

@@ -90,7 +90,7 @@ public interface CustomProjectile {
     /**
      * Sets if is ignoring blocks like water.
      *
-     * @param ignoreSomeBlocks
+     * @param ignoreSomeBlocks is ignoring blocks.
      */
     public void setIgnoreSomeBlocks(boolean ignoreSomeBlocks);
 

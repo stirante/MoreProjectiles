@@ -206,7 +206,7 @@ public enum Particles {
      * @return the players in range
      */
     private static List<Player> getPlayersInRange(Location loc, double range) {
-        List<Player> players = new ArrayList<Player>();
+        List<Player> players = new ArrayList<>();
         double sqr = range * range;
         for (Player p : loc.getWorld().getPlayers())
             if (p.getLocation().distanceSquared(loc) <= sqr)
