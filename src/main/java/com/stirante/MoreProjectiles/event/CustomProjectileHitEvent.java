@@ -17,11 +17,11 @@ public class CustomProjectileHitEvent extends Event implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
     private final CustomProjectile projectile;
+    private final float damageMultiplier;
     private LivingEntity entity;
     private Block block;
     private BlockFace face;
     private boolean cancelled;
-    private final float damageMultiplier;
 
     /**
      * Instantiates a new custom projectile hit event.
@@ -47,6 +47,15 @@ public class CustomProjectileHitEvent extends Event implements Cancellable {
         block = b;
         face = f;
         this.damageMultiplier = damageMultiplier;
+    }
+
+    /**
+     * Gets the handler list.
+     *
+     * @return handler list
+     */
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     @Override
@@ -100,15 +109,6 @@ public class CustomProjectileHitEvent extends Event implements Cancellable {
     }
 
     /**
-     * Gets the handler list.
-     *
-     * @return handler list
-     */
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
-
-    /**
      * Gets the hit type.
      *
      * @return hit type
@@ -128,14 +128,6 @@ public class CustomProjectileHitEvent extends Event implements Cancellable {
         return getProjectile().getEntityType();
     }
 
-    /**
-     * The Enum HitType.
-     */
-    public enum HitType {
-
-        ENTITY, BLOCK
-    }
-
     @Override
     public String toString() {
         if (getHitType() == HitType.ENTITY)
@@ -153,5 +145,13 @@ public class CustomProjectileHitEvent extends Event implements Cancellable {
     @Override
     public void setCancelled(boolean value) {
         cancelled = value;
+    }
+
+    /**
+     * The Enum HitType.
+     */
+    public enum HitType {
+
+        ENTITY, BLOCK
     }
 }

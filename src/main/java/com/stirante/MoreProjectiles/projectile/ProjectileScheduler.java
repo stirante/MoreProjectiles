@@ -29,13 +29,14 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
     private final String name;
     private final EntityLiving shooter;
     private final Entity e;
-    private Random random;
-    private int age;
     private final int id;
     private final List<Runnable> runnables = new ArrayList<>();
     private final List<TypedRunnable<ProjectileScheduler>> typedRunnables = new ArrayList<>();
+    private Random random;
+    private int age;
     private int knockback;
     private ArrayList<Material> ignoredMaterials = new ArrayList<>();
+    private Field f;
 
     /**
      * Creates new scheduler projectile
@@ -68,6 +69,11 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
         this.e.motY = (-MathHelper.sin(this.e.pitch / 180.0F * 3.1415927F) * f);
         shoot(this.e.motX, this.e.motY, this.e.motZ, power * 1.5F, 1.0F);
         id = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 1, 1);
+        try {
+            this.f = getClass().getDeclaredField("invulnerable");
+        } catch (NoSuchFieldException er) {
+            er.printStackTrace();
+        }
     }
 
     @Override
@@ -240,25 +246,17 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
     }
 
     @Override
-    public void setInvulnerable(boolean value) {
-        try {
-            Field f = e.getClass().getDeclaredField("invulnerable");
-            f.setAccessible(true);
-            f.set(e, value);
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
+    public boolean isInvulnerable() {
+        return getEntity().spigot().isInvulnerable();
     }
 
     @Override
-    public boolean isInvulnerable() {
+    public void setInvulnerable(boolean value) {
         try {
-            Field f = e.getClass().getDeclaredField("invulnerable");
             f.setAccessible(true);
-            return (Boolean) f.get(e);
-        } catch (Throwable t) {
+            f.set(this, value);
+        } catch (SecurityException | IllegalAccessException t) {
             t.printStackTrace();
-            return false;
         }
     }
 
@@ -288,13 +286,13 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
     }
 
     @Override
-    public void setKnockback(int i) {
-        knockback = i;
+    public int getKnockback() {
+        return knockback;
     }
 
     @Override
-    public int getKnockback() {
-        return knockback;
+    public void setKnockback(int i) {
+        knockback = i;
     }
 
 }

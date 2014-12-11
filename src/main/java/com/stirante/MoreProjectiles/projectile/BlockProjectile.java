@@ -25,10 +25,10 @@ import java.util.List;
 public class BlockProjectile extends EntityFallingBlock implements CustomProjectile<BlockProjectile>, IProjectile {
 
     private final EntityLiving shooter;
-    private int age;
     private final String name;
     private final List<Runnable> runnables = new ArrayList<>();
     private final List<TypedRunnable<BlockProjectile>> typedRunnables = new ArrayList<>();
+    private int age;
     private int knockback = 0;
     private Field f;
     private ArrayList<Material> ignoredMaterials = new ArrayList<>();
@@ -288,6 +288,11 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
     }
 
     @Override
+    public boolean isInvulnerable() {
+        return getEntity().spigot().isInvulnerable();
+    }
+
+    @Override
     public void setInvulnerable(boolean value) {
         try {
             f.setAccessible(true);
@@ -295,11 +300,6 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
         } catch (SecurityException | IllegalAccessException t) {
             t.printStackTrace();
         }
-    }
-
-    @Override
-    public boolean isInvulnerable() {
-        return getEntity().spigot().isInvulnerable();
     }
 
     @Override
@@ -328,13 +328,13 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
     }
 
     @Override
-    public void setKnockback(int i) {
-        knockback = i;
+    public int getKnockback() {
+        return knockback;
     }
 
     @Override
-    public int getKnockback() {
-        return knockback;
+    public void setKnockback(int i) {
+        knockback = i;
     }
 
 }

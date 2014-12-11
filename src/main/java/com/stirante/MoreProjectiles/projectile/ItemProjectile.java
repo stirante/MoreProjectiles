@@ -33,6 +33,7 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
     private int knockback;
     private int age;
     private ArrayList<Material> ignoredMaterials = new ArrayList<>();
+    private Field f;
 
     /**
      * Instantiates a new item projectile.
@@ -66,6 +67,11 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
         motY = (-MathHelper.sin(pitch / 180.0F * 3.1415927F) * f);
         shoot(motX, motY, motZ, power * 1.5F, 1.0F);
         world.addEntity(this);
+        try {
+            this.f = getClass().getDeclaredField("invulnerable");
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -95,6 +101,11 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
         motY = (-MathHelper.sin(pitch / 180.0F * 3.1415927F) * f);
         shoot(motX, motY, motZ, power * 1.5F, 1.0F);
         world.addEntity(this);
+        try {
+            this.f = getClass().getDeclaredField("invulnerable");
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -294,26 +305,18 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
     }
 
     @Override
-    public void setInvulnerable(boolean value) {
-        try {
-            Field f = getClass().getDeclaredField("invulnerable");
-            f.setAccessible(true);
-            f.set(this, value);
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
+    public boolean isInvulnerable() {
+        return getEntity().spigot().isInvulnerable();
     }
 
     @Override
-    public boolean isInvulnerable() {
+    public void setInvulnerable(boolean value) {
         try {
-            Field f = getClass().getDeclaredField("invulnerable");
             f.setAccessible(true);
-            return f.getBoolean(this);
-        } catch (Throwable t) {
+            f.set(this, value);
+        } catch (SecurityException | IllegalAccessException t) {
             t.printStackTrace();
         }
-        return false;
     }
 
     @Override
@@ -352,13 +355,13 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
     }
 
     @Override
-    public void setKnockback(int i) {
-        knockback = i;
+    public int getKnockback() {
+        return knockback;
     }
 
     @Override
-    public int getKnockback() {
-        return knockback;
+    public void setKnockback(int i) {
+        knockback = i;
     }
 
 }

@@ -42,18 +42,18 @@ public interface CustomProjectile<T> {
     public String getProjectileName();
 
     /**
-     * Sets entity invulnerable.
-     *
-     * @param value invulnerable state
-     */
-    public void setInvulnerable(boolean value);
-
-    /**
      * Checks if entity is invulnerable.
      *
      * @return true, if entity is invulnerable
      */
     public boolean isInvulnerable();
+
+    /**
+     * Sets entity invulnerable.
+     *
+     * @param value invulnerable state
+     */
+    public void setInvulnerable(boolean value);
 
     /**
      * Adds the runnable.
@@ -93,15 +93,15 @@ public interface CustomProjectile<T> {
     /**
      * Sets if is ignoring blocks like water.
      *
-     * @param i knockback level
+     * @return knockback level
      */
-    public void setKnockback(int i);
+    public int getKnockback();
 
     /**
      * Sets if is ignoring blocks like water.
      *
-     * @return knockback level
+     * @param i knockback level
      */
-    public int getKnockback();
+    public void setKnockback(int i);
 
 }

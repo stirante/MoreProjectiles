@@ -26,11 +26,12 @@ public class OrbProjectile extends EntityExperienceOrb implements CustomProjecti
 
     private final EntityLiving shooter;
     private final String name;
-    private int age;
     private final List<Runnable> runnables = new ArrayList<>();
     private final List<TypedRunnable<OrbProjectile>> typedRunnables = new ArrayList<>();
+    private int age;
     private int knockback;
     private ArrayList<Material> ignoredMaterials = new ArrayList<>();
+    private Field f;
 
     /**
      * Instantiates a new orb projectile.
@@ -57,6 +58,11 @@ public class OrbProjectile extends EntityExperienceOrb implements CustomProjecti
         motY = (-MathHelper.sin(pitch / 180.0F * 3.1415927F) * f);
         shoot(motX, motY, motZ, power * 1.5F, 1.0F);
         world.addEntity(this);
+        try {
+            this.f = getClass().getDeclaredField("invulnerable");
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -83,6 +89,11 @@ public class OrbProjectile extends EntityExperienceOrb implements CustomProjecti
         motY = (-MathHelper.sin(pitch / 180.0F * 3.1415927F) * f);
         shoot(motX, motY, motZ, power * 1.5F, 1.0F);
         world.addEntity(this);
+        try {
+            this.f = getClass().getDeclaredField("invulnerable");
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -262,25 +273,17 @@ public class OrbProjectile extends EntityExperienceOrb implements CustomProjecti
     }
 
     @Override
-    public void setInvulnerable(boolean value) {
-        try {
-            Field f = getClass().getDeclaredField("invulnerable");
-            f.setAccessible(true);
-            f.set(this, value);
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
+    public boolean isInvulnerable() {
+        return getEntity().spigot().isInvulnerable();
     }
 
     @Override
-    public boolean isInvulnerable() {
+    public void setInvulnerable(boolean value) {
         try {
-            Field f = getClass().getDeclaredField("invulnerable");
             f.setAccessible(true);
-            return (Boolean) f.get(this);
-        } catch (Throwable t) {
+            f.set(this, value);
+        } catch (SecurityException | IllegalAccessException t) {
             t.printStackTrace();
-            return false;
         }
     }
 
@@ -310,13 +313,13 @@ public class OrbProjectile extends EntityExperienceOrb implements CustomProjecti
     }
 
     @Override
-    public void setKnockback(int i) {
-        knockback = i;
+    public int getKnockback() {
+        return knockback;
     }
 
     @Override
-    public int getKnockback() {
-        return knockback;
+    public void setKnockback(int i) {
+        knockback = i;
     }
 
 }
