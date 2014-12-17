@@ -70,7 +70,7 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
         shoot(this.e.motX, this.e.motY, this.e.motZ, power * 1.5F, 1.0F);
         id = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this, 1, 1);
         try {
-            this.f = getClass().getDeclaredField("invulnerable");
+            this.f = Entity.class.getDeclaredField("invulnerable");
         } catch (NoSuchFieldException er) {
             er.printStackTrace();
         }

@@ -62,7 +62,7 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
         world.addEntity(this);
         this.dropItem = false;
         try {
-            this.f = getClass().getDeclaredField("invulnerable");
+            this.f = Entity.class.getDeclaredField("invulnerable");
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
@@ -96,7 +96,7 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
         world.addEntity(this);
         this.dropItem = false;
         try {
-            this.f = getClass().getDeclaredField("invulnerable");
+            this.f = Entity.class.getDeclaredField("invulnerable");
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
@@ -152,7 +152,6 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
                 CustomProjectileHitEvent event = new BlockProjectileHitEvent(this, damageMultiplier, world.getWorld().getBlockAt((int) locX, (int) locY, (int) locZ), BlockFace.UP, getMaterial(), getData());
                 Bukkit.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
-                    world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.TILE_BREAK, getId(), getData(), 0F, 0F, 0F, 1F, 60, 20);
                     die();
                 }
             }
@@ -216,7 +215,6 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
                             movingobjectposition.entity.g(motX * getKnockback() * 0.6000000238418579D / f4, 0.1D, motZ * getKnockback() * 0.6000000238418579D / f4);
                         }
                     }
-                    world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.TILE_BREAK, getId(), getData(), 0F, 0F, 0F, 1F, 60, 20);
                     die();
                 }
             } else if (movingobjectposition.a() != null) {
@@ -232,7 +230,6 @@ public class BlockProjectile extends EntityFallingBlock implements CustomProject
                     CustomProjectileHitEvent event = new BlockProjectileHitEvent(this, damageMultiplier, world.getWorld().getBlockAt((int) movingobjectposition.pos.a, (int) movingobjectposition.pos.b, (int) movingobjectposition.pos.c), CraftBlock.notchToBlockFace(movingobjectposition.direction), getMaterial(), getData());
                     Bukkit.getPluginManager().callEvent(event);
                     if (!event.isCancelled()) {
-                        world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.TILE_BREAK, getId(), getData(), 0F, 0F, 0F, 1F, 60, 20);
                         die();
                     }
                 }

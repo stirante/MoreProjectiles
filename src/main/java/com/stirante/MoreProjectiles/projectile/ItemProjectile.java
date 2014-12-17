@@ -68,7 +68,7 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
         shoot(motX, motY, motZ, power * 1.5F, 1.0F);
         world.addEntity(this);
         try {
-            this.f = getClass().getDeclaredField("invulnerable");
+            this.f = Entity.class.getDeclaredField("invulnerable");
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
@@ -102,7 +102,7 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
         shoot(motX, motY, motZ, power * 1.5F, 1.0F);
         world.addEntity(this);
         try {
-            this.f = getClass().getDeclaredField("invulnerable");
+            this.f = Entity.class.getDeclaredField("invulnerable");
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
@@ -123,10 +123,6 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
                 CustomProjectileHitEvent event = new ItemProjectileHitEvent(this, damageMultiplier, world.getWorld().getBlockAt((int) locX, (int) locY, (int) locZ), BlockFace.UP, getItem());
                 Bukkit.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
-                    if (CraftItemStack.asCraftMirror(getItemStack()).getType().isBlock())
-                        world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.TILE_BREAK, getId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20, 20);
-                    else
-                        world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.ITEM_BREAK, getId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20, 20);
                     die();
                 }
             }
@@ -185,10 +181,6 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
                             movingobjectposition.entity.g(motX * getKnockback() * 0.6000000238418579D / f4, 0.1D, motZ * getKnockback() * 0.6000000238418579D / f4);
                         }
                     }
-                    if (CraftItemStack.asCraftMirror(getItemStack()).getType().isBlock())
-                        world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.TILE_BREAK, getId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20, 20);
-                    else
-                        world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.ITEM_BREAK, getId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20, 20);
                     die();
                 }
             } else if (movingobjectposition.a() != null) {
@@ -204,10 +196,6 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
                     CustomProjectileHitEvent event = new ItemProjectileHitEvent(this, damageMultiplier, world.getWorld().getBlockAt((int) movingobjectposition.pos.a, (int) movingobjectposition.pos.b, (int) movingobjectposition.pos.c), CraftBlock.notchToBlockFace(movingobjectposition.direction), getItem());
                     Bukkit.getPluginManager().callEvent(event);
                     if (!event.isCancelled()) {
-                        if (CraftItemStack.asCraftMirror(getItemStack()).getType().isBlock())
-                            world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.TILE_BREAK, getId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20, 20);
-                        else
-                            world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.ITEM_BREAK, getId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20, 20);
                         die();
                     }
                 }
@@ -282,10 +270,6 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
         CustomProjectileHitEvent event = new ItemProjectileHitEvent(this, 0.5F, living, getItem());
         Bukkit.getPluginManager().callEvent(event);
         if (!event.isCancelled()) {
-            if (CraftItemStack.asCraftMirror(getItemStack()).getType().isBlock())
-                world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.TILE_BREAK, getId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20, 20);
-            else
-                world.getWorld().spigot().playEffect(getBukkitEntity().getLocation(), Effect.ITEM_BREAK, getId(), getItem().getData().getData(), 0F, 0F, 0F, 1F, 20, 20);
             die();
         }
     }

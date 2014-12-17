@@ -60,7 +60,7 @@ public class TNTProjectile extends EntityTNTPrimed implements CustomProjectile<T
         shoot(motX, motY, motZ, power * 1.5F, 1.0F);
         world.addEntity(this);
         try {
-            this.f = getClass().getDeclaredField("invulnerable");
+            this.f = Entity.class.getDeclaredField("invulnerable");
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
@@ -91,7 +91,7 @@ public class TNTProjectile extends EntityTNTPrimed implements CustomProjectile<T
         shoot(motX, motY, motZ, power * 1.5F, 1.0F);
         world.addEntity(this);
         try {
-            this.f = getClass().getDeclaredField("invulnerable");
+            this.f = Entity.class.getDeclaredField("invulnerable");
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
