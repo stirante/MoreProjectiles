@@ -1,0 +1,5 @@
+name: MoreProjectiles
+description: MoreProjectiles library
+version: 1.3
+authors: [Stirante, PaulBGD]
+main: com.stirante.MoreProjectiles.BlankMain
