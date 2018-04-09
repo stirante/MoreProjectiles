@@ -2,13 +2,13 @@ package com.stirante.MoreProjectiles.projectile;
 
 import com.stirante.MoreProjectiles.TypedRunnable;
 import com.stirante.MoreProjectiles.event.CustomProjectileHitEvent;
-import net.minecraft.server.v1_8_R1.*;
+import net.minecraft.server.v1_12_R1.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_8_R1.block.CraftBlock;
-import org.bukkit.craftbukkit.v1_8_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_8_R1.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_12_R1.block.CraftBlock;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftLivingEntity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.plugin.Plugin;
@@ -83,9 +83,9 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
         Block block = iblockdata.getBlock();
 
         if (!ignoredMaterials.contains(Material.getMaterial(Block.getId(block)))) {
-            AxisAlignedBB axisalignedbb = block.a(e.world, blockposition, iblockdata);
+            AxisAlignedBB axisalignedbb = block.a(iblockdata, (IBlockAccess) e.world, blockposition);
 
-            if ((axisalignedbb != null) && (axisalignedbb.a(new Vec3D(e.locX, e.locY, e.locZ)))) {
+            if ((axisalignedbb != null) && (axisalignedbb.b(new Vec3D(e.locX, e.locY, e.locZ)))) {
                 float damageMultiplier = MathHelper.sqrt(e.motX * e.motX + e.motY * e.motY + e.motZ * e.motZ);
                 CustomProjectileHitEvent event = new CustomProjectileHitEvent(this, damageMultiplier, e.world.getWorld().getBlockAt((int) e.locX, (int) e.locY, (int) e.locZ), BlockFace.UP);
                 Bukkit.getPluginManager().callEvent(event);
@@ -103,7 +103,7 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
         vec3d = new Vec3D(e.locX, e.locY, e.locZ);
         vec3d1 = new Vec3D(e.locX + e.motX, e.locY + e.motY, e.locZ + e.motZ);
         if (movingobjectposition != null) {
-            vec3d1 = new Vec3D(movingobjectposition.pos.a, movingobjectposition.pos.b, movingobjectposition.pos.c);
+            vec3d1 = new Vec3D(movingobjectposition.pos.x, movingobjectposition.pos.y, movingobjectposition.pos.z);
         }
 
         Entity entity = null;
@@ -113,10 +113,10 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
         for (Object aList : list) {
             Entity entity1 = (Entity) aList;
 
-            if ((entity1.ad()) && ((entity1 != shooter) || (age >= 5))) {
+            if ((entity1.isInteractable()) && ((entity1 != shooter) || (age >= 5))) {
                 float f1 = 0.3F;
                 AxisAlignedBB axisalignedbb1 = entity1.getBoundingBox().grow(f1, f1, f1);
-                MovingObjectPosition movingobjectposition1 = axisalignedbb1.a(vec3d, vec3d1);
+                MovingObjectPosition movingobjectposition1 = axisalignedbb1.b(vec3d, vec3d1);
 
                 if (movingobjectposition1 != null) {
                     double d1 = vec3d.distanceSquared(movingobjectposition1.pos);
@@ -151,7 +151,7 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
                     if (getKnockback() > 0) {
                         float f4 = MathHelper.sqrt(e.motX * e.motX + e.motZ * e.motZ);
                         if (f4 > 0.0F) {
-                            movingobjectposition.entity.g(e.motX * getKnockback() * 0.6000000238418579D / f4, 0.1D, e.motZ * getKnockback() * 0.6000000238418579D / f4);
+                            movingobjectposition.entity.f(e.motX * getKnockback() * 0.6000000238418579D / f4, 0.1D, e.motZ * getKnockback() * 0.6000000238418579D / f4);
                         }
                     }
                     e.die();
@@ -159,15 +159,15 @@ public class ProjectileScheduler implements Runnable, IProjectile, CustomProject
                 }
             } else if (movingobjectposition.a() != null) {
                 if (!ignoredMaterials.contains(Material.getMaterial(Block.getId(block)))) {
-                    e.motX = ((float) (movingobjectposition.pos.a - e.locX));
-                    e.motY = ((float) (movingobjectposition.pos.b - e.locY));
-                    e.motZ = ((float) (movingobjectposition.pos.c - e.locZ));
+                    e.motX = ((float) (movingobjectposition.pos.x - e.locX));
+                    e.motY = ((float) (movingobjectposition.pos.y - e.locY));
+                    e.motZ = ((float) (movingobjectposition.pos.z - e.locZ));
                     float f3 = MathHelper.sqrt(e.motX * e.motX + e.motY * e.motY + e.motZ * e.motZ);
                     e.locX -= e.motX / f3 * 0.0500000007450581D;
                     e.locY -= e.motY / f3 * 0.0500000007450581D;
                     e.locZ -= e.motZ / f3 * 0.0500000007450581D;
                     float damageMultiplier = MathHelper.sqrt(e.motX * e.motX + e.motY * e.motY + e.motZ * e.motZ);
-                    CustomProjectileHitEvent event = new CustomProjectileHitEvent(this, damageMultiplier, e.world.getWorld().getBlockAt((int) movingobjectposition.pos.a, (int) movingobjectposition.pos.b, (int) movingobjectposition.pos.c), CraftBlock.notchToBlockFace(movingobjectposition.direction));
+                    CustomProjectileHitEvent event = new CustomProjectileHitEvent(this, damageMultiplier, e.world.getWorld().getBlockAt((int) movingobjectposition.pos.x, (int) movingobjectposition.pos.y, (int) movingobjectposition.pos.z), CraftBlock.notchToBlockFace(movingobjectposition.direction));
                     Bukkit.getPluginManager().callEvent(event);
                     if (!event.isCancelled()) {
                         e.die();

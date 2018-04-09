@@ -3,16 +3,15 @@ package com.stirante.MoreProjectiles.projectile;
 import com.stirante.MoreProjectiles.TypedRunnable;
 import com.stirante.MoreProjectiles.event.CustomProjectileHitEvent;
 import com.stirante.MoreProjectiles.event.ItemProjectileHitEvent;
-import net.minecraft.server.v1_8_R1.*;
+import net.minecraft.server.v1_12_R1.*;
 import org.bukkit.Bukkit;
-import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_8_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_8_R1.block.CraftBlock;
-import org.bukkit.craftbukkit.v1_8_R1.entity.CraftLivingEntity;
-import org.bukkit.craftbukkit.v1_8_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_12_R1.block.CraftBlock;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
@@ -26,6 +25,8 @@ import java.util.List;
  */
 public class ItemProjectile extends EntityItem implements IProjectile, CustomProjectile<ItemProjectile> {
 
+    private static final DataWatcherObject<net.minecraft.server.v1_12_R1.ItemStack> itemWatcher = DataWatcher.a(EntityItem.class, DataWatcherRegistry.f);
+
     private final EntityLiving shooter;
     private final String name;
     private final List<Runnable> runnables = new ArrayList<>();
@@ -34,6 +35,8 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
     private int age;
     private ArrayList<Material> ignoredMaterials = new ArrayList<>();
     private Field f;
+
+    private net.minecraft.server.v1_12_R1.ItemStack _itemStack;
 
     /**
      * Instantiates a new item projectile.
@@ -48,9 +51,12 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
     @SuppressWarnings("deprecation")
     public ItemProjectile(String name, Location loc, org.bukkit.inventory.ItemStack itemstack, LivingEntity shooter, float power) {
         super(((CraftWorld) loc.getWorld()).getHandle(), loc.getX(), loc.getY(), loc.getZ(), null);
-        if (CraftItemStack.asNMSCopy(itemstack) != null) setItemStack(CraftItemStack.asNMSCopy(itemstack));
-        else
-            setItemStack(new net.minecraft.server.v1_8_R1.ItemStack(Item.getById(itemstack.getTypeId()), itemstack.getAmount(), itemstack.getData().getData()));
+        if (CraftItemStack.asNMSCopy(itemstack) != null) {
+            _itemStack = CraftItemStack.asNMSCopy(itemstack);
+        } else {
+            this._itemStack = new net.minecraft.server.v1_12_R1.ItemStack(Item.getById(itemstack.getTypeId()), itemstack.getAmount(), itemstack.getData().getData());
+        }
+        this.setItemStack(_itemStack);
         if (itemstack.getTypeId() == 0) System.out.println("You cannot shoot air!");
         this.name = name;
         this.pickupDelay = Integer.MAX_VALUE;
@@ -87,7 +93,7 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
         super(((CraftLivingEntity) shooter).getHandle().world);
         this.name = name;
         this.pickupDelay = Integer.MAX_VALUE;
-        setItemStack(CraftItemStack.asNMSCopy(item));
+        setItemStack(_itemStack = CraftItemStack.asNMSCopy(item));
         this.shooter = ((CraftLivingEntity) shooter).getHandle();
         this.a(0.25F, 0.25F);
         setPositionRotation(shooter.getLocation().getX(), shooter.getLocation().getY() + shooter.getEyeHeight(), shooter.getLocation().getZ(), shooter.getLocation().getYaw(), shooter.getLocation().getPitch());
@@ -109,16 +115,16 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
     }
 
     @Override
-    public void s_() {
-        K();
+    public void B_() {
+        Y();
         BlockPosition blockposition = new BlockPosition(locX, locY, locZ);
         IBlockData iblockdata = world.getType(blockposition);
         Block block = iblockdata.getBlock();
 
         if (!ignoredMaterials.contains(Material.getMaterial(Block.getId(block)))) {
-            AxisAlignedBB axisalignedbb = block.a(world, blockposition, iblockdata);
+            AxisAlignedBB axisalignedbb = block.a(iblockdata, (IBlockAccess) world, blockposition);
 
-            if ((axisalignedbb != null) && (axisalignedbb.a(new Vec3D(locX, locY, locZ)))) {
+            if ((axisalignedbb != null) && (axisalignedbb.b(new Vec3D(locX, locY, locZ)))) {
                 float damageMultiplier = MathHelper.sqrt(motX * motX + motY * motY + motZ * motZ);
                 CustomProjectileHitEvent event = new ItemProjectileHitEvent(this, damageMultiplier, world.getWorld().getBlockAt((int) locX, (int) locY, (int) locZ), BlockFace.UP, getItem());
                 Bukkit.getPluginManager().callEvent(event);
@@ -135,7 +141,7 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
         vec3d = new Vec3D(locX, locY, locZ);
         vec3d1 = new Vec3D(locX + motX, locY + motY, locZ + motZ);
         if (movingobjectposition != null) {
-            vec3d1 = new Vec3D(movingobjectposition.pos.a, movingobjectposition.pos.b, movingobjectposition.pos.c);
+            vec3d1 = new Vec3D(movingobjectposition.pos.x, movingobjectposition.pos.y, movingobjectposition.pos.z);
         }
 
         Entity entity = null;
@@ -145,10 +151,10 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
         for (Object aList : list) {
             Entity entity1 = (Entity) aList;
 
-            if ((entity1.ad()) && ((entity1 != shooter) || (age >= 5))) {
+            if ((entity1.isInteractable()) && ((entity1 != shooter) || (age >= 5))) {
                 float f1 = 0.3F;
                 AxisAlignedBB axisalignedbb1 = entity1.getBoundingBox().grow(f1, f1, f1);
-                MovingObjectPosition movingobjectposition1 = axisalignedbb1.a(vec3d, vec3d1);
+                MovingObjectPosition movingobjectposition1 = axisalignedbb1.b(vec3d, vec3d1);
 
                 if (movingobjectposition1 != null) {
                     double d1 = vec3d.distanceSquared(movingobjectposition1.pos);
@@ -178,22 +184,22 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
                     if (getKnockback() > 0) {
                         float f4 = MathHelper.sqrt(motX * motX + motZ * motZ);
                         if (f4 > 0.0F) {
-                            movingobjectposition.entity.g(motX * getKnockback() * 0.6000000238418579D / f4, 0.1D, motZ * getKnockback() * 0.6000000238418579D / f4);
+                            movingobjectposition.entity.f(motX * getKnockback() * 0.6000000238418579D / f4, 0.1D, motZ * getKnockback() * 0.6000000238418579D / f4);
                         }
                     }
                     die();
                 }
             } else if (movingobjectposition.a() != null) {
                 if (!ignoredMaterials.contains(Material.getMaterial(Block.getId(block)))) {
-                    motX = ((float) (movingobjectposition.pos.a - locX));
-                    motY = ((float) (movingobjectposition.pos.b - locY));
-                    motZ = ((float) (movingobjectposition.pos.c - locZ));
+                    motX = ((float) (movingobjectposition.pos.x - locX));
+                    motY = ((float) (movingobjectposition.pos.y - locY));
+                    motZ = ((float) (movingobjectposition.pos.z - locZ));
                     float f3 = MathHelper.sqrt(motX * motX + motY * motY + motZ * motZ);
                     locX -= motX / f3 * 0.0500000007450581D;
                     locY -= motY / f3 * 0.0500000007450581D;
                     locZ -= motZ / f3 * 0.0500000007450581D;
                     float damageMultiplier = MathHelper.sqrt(motX * motX + motY * motY + motZ * motZ);
-                    CustomProjectileHitEvent event = new ItemProjectileHitEvent(this, damageMultiplier, world.getWorld().getBlockAt((int) movingobjectposition.pos.a, (int) movingobjectposition.pos.b, (int) movingobjectposition.pos.c), CraftBlock.notchToBlockFace(movingobjectposition.direction), getItem());
+                    CustomProjectileHitEvent event = new ItemProjectileHitEvent(this, damageMultiplier, world.getWorld().getBlockAt((int) movingobjectposition.pos.x, (int) movingobjectposition.pos.y, (int) movingobjectposition.pos.z), CraftBlock.notchToBlockFace(movingobjectposition.direction), getItem());
                     Bukkit.getPluginManager().callEvent(event);
                     if (!event.isCancelled()) {
                         die();
@@ -329,13 +335,11 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
     }
 
     @Override
-    public net.minecraft.server.v1_8_R1.ItemStack getItemStack() {
-        net.minecraft.server.v1_8_R1.ItemStack itemstack = getDataWatcher().getItemStack(10);
-
-        if (itemstack == null) {
-            return new net.minecraft.server.v1_8_R1.ItemStack(Blocks.STONE);
+    public net.minecraft.server.v1_12_R1.ItemStack getItemStack() {
+        if (_itemStack == null) {
+            return new net.minecraft.server.v1_12_R1.ItemStack(Blocks.STONE);
         }
-        return itemstack;
+        return _itemStack;
     }
 
     @Override
