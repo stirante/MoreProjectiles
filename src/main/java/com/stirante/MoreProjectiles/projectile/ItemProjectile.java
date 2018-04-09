@@ -36,6 +36,8 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
     private ArrayList<Material> ignoredMaterials = new ArrayList<>();
     private Field f;
 
+    private net.minecraft.server.v1_12_R1.ItemStack _itemStack;
+
     /**
      * Instantiates a new item projectile.
      *
@@ -49,9 +51,12 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
     @SuppressWarnings("deprecation")
     public ItemProjectile(String name, Location loc, org.bukkit.inventory.ItemStack itemstack, LivingEntity shooter, float power) {
         super(((CraftWorld) loc.getWorld()).getHandle(), loc.getX(), loc.getY(), loc.getZ(), null);
-        if (CraftItemStack.asNMSCopy(itemstack) != null) setItemStack(CraftItemStack.asNMSCopy(itemstack));
-        else
-            setItemStack(new net.minecraft.server.v1_12_R1.ItemStack(Item.getById(itemstack.getTypeId()), itemstack.getAmount(), itemstack.getData().getData()));
+        if (CraftItemStack.asNMSCopy(itemstack) != null) {
+            _itemStack = CraftItemStack.asNMSCopy(itemstack);
+        } else {
+            this._itemStack = new net.minecraft.server.v1_12_R1.ItemStack(Item.getById(itemstack.getTypeId()), itemstack.getAmount(), itemstack.getData().getData());
+        }
+        this.setItemStack(_itemStack);
         if (itemstack.getTypeId() == 0) System.out.println("You cannot shoot air!");
         this.name = name;
         this.pickupDelay = Integer.MAX_VALUE;
@@ -88,7 +93,7 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
         super(((CraftLivingEntity) shooter).getHandle().world);
         this.name = name;
         this.pickupDelay = Integer.MAX_VALUE;
-        setItemStack(CraftItemStack.asNMSCopy(item));
+        setItemStack(_itemStack = CraftItemStack.asNMSCopy(item));
         this.shooter = ((CraftLivingEntity) shooter).getHandle();
         this.a(0.25F, 0.25F);
         setPositionRotation(shooter.getLocation().getX(), shooter.getLocation().getY() + shooter.getEyeHeight(), shooter.getLocation().getZ(), shooter.getLocation().getYaw(), shooter.getLocation().getPitch());
@@ -331,12 +336,10 @@ public class ItemProjectile extends EntityItem implements IProjectile, CustomPro
 
     @Override
     public net.minecraft.server.v1_12_R1.ItemStack getItemStack() {
-        net.minecraft.server.v1_12_R1.ItemStack itemstack = getDataWatcher().get(itemWatcher);
-
-        if (itemstack == null) {
+        if (_itemStack == null) {
             return new net.minecraft.server.v1_12_R1.ItemStack(Blocks.STONE);
         }
-        return itemstack;
+        return _itemStack;
     }
 
     @Override
